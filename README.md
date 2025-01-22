@@ -1,22 +1,22 @@
-ANÁLISE DE DADOS DO DATASET DOS CAMPEÕES DO LOL
+# ANÁLISE DE DADOS DO DATASET DOS CAMPEÕES DO LOL
 DO PATCH 14.22
 
-Contextualização do jogo
+## Contextualização do jogo
 Nosso projeto de estatística foi sobre os campeões do jogo de MMO RPG: League of Legends, esse jogo consiste em 2 equipes de 5 pessoas, onde cada uma delas defende uma estrutura chamada de nexus que fica na base deles, o objetivo de cada equipe é destruir o nexus da equipe adversária, para destruir o nexus se faz necessário destruir todas as 3 torres de uma das 3 linhas do mapa, destruir o inibidor da linha, destruir as 2 torres que ficam na frente do nexus e por fim o nexus.
 
 ![1-ab4fb7f2](https://github.com/user-attachments/assets/1cb59f28-7a54-4718-bf97-6ea53b25778a)
 
-mapa do jogo.
+(mapa do jogo).
 
 Para jogar esse jogo escolhemos algum dos campeões para entrar no mapa, e os campeões vão ser o foco deste trabalho, para fim de contexto, ao entrar em uma partida, primeiro vamos banir um campeão para a partida, onde nem a sua equipe nem a equipe adversária podem escolher mais esse campeão, como cada pessoa bane um campeão, 10 campeões podem ser banidos por partida(ja que temos 5 jogadores em cada time), e depois cada jogador seleciona um campeão para jogar.
 
 Atualmente no League of Legends, temos 169 campeões, e cada mês(em média) o jogo solta um patch onde altera alguns atributos e habilidades dos campeões e dos itens(que não vai ser abordado aqui), o patch que vamos falar é o 14.22.1
 Aquisição dos dados
-Banco de dados
+## Banco de dados
 para adquirir os dados dos campeões, achamos um repositório do github com o banco de dados atualizado do patch 14.22.1 disponível em: https://github.com/bryanpimenta/league-of-legends-database, nesse banco temos todos os atributos iniciais dos campeões, quantidade de skins, habilidades, descricoes, etc…
 no github temos o squema.sql, que nos copiamos e colocamos na nossa IDE de sql, para colocar no nosso próprio servidor de banco de dados, o SGBD era o mysql
 porém precisavamos de dados sobre o desempenho de cada campeão no jogo, esse desempenho é medido em 3 parâmetros: winrate(taxa de vitórias do campeão de todas as partidas que ele joga), pickrate(taxa de vezes que ele é selecionado em relação a todas as partidas), banrate(taxa de vezes que o campeão é banido em relação a todas as partidas), para adquirir esses dados usamos o webscrapping
-WebScrapping
+## WebScrapping
 Existe um site chamado OP.GG que tem várias informações estatísticas do jogo, como esses dados que queríamos: winrate, pickrate e banrate. Pensamos em adicionar esses dados ao banco de dados, para isso precisavamos extrair do OP.GG esses dados, fizemos um código em python que pela url, acessava a página do campeão no OP.GG e pegava o winrate, pickrate e banrate e registrava em um arquivo em formato de tupla, para ser inserido no banco, código:
 
 
@@ -98,8 +98,8 @@ JOIN (SELECT CSk.champion_id, count(*) as skins
     GROUP BY CSk.champion_id) as CSkins ON CSkins.champion_id = C.`key`
 ```
 
-Explicação dos dados
-Descricao das colunas
+## Explicação dos dados
+### Descricao das colunas
 - name: nome do campeão
 - tags: classes em que ele se encaixa
 - partype: o que ele consome para conjurar habilidades
@@ -131,12 +131,12 @@ Descricao das colunas
 - banrate: taxa de banimento do campeão
 
 
-Limpeza dos dados
+### Limpeza dos dados
 depois de feita o arquivo.csv com os dados, importamos ele para o nosso código, depois de visualizar o head, percebemos algumas colunas que não iam nos ajudar na análise, como: id (não ajudaria nada sobre a análise por ser uma chave primária), crit e critperlevel (após visualizar essa coluna percebemos que nenhum dos campeões começam com chance de crítico, nem recebem chance de crítico de acordo com o seu nível então todos os valores dessas 2 colunas eram 0), attackspeed e attackspeedperlevel (esses dados estavam inseridos erroneamente na base de dados, não condizem com o jogo, então removemos ele) e por fim as tags, pois os dados dela não eram atômicos.
 Já na análise dos valores nulos, percebemos que um dos campeões tinham o valor de partype como nulo, esse campeão era a Bel`veth, esse campeão não gasta nada para usar suas habilidades, então eu alterei o valor nulo para nenhum.
 durante a análise exploratória dos dados, identifiquei um campeão que tem 10.000 de mana inicial, o que é impossível, visto que campeões magos (que tendem a ter mais itens que aumentam a mana) chegam a ter 6000 de mana, então ao ver quem era esse campeão, vimos que ele é o Viego, e ele não usa mana para usar suas habilidades, então coloquei esse valor de 10.000 como 0
 Análise dos dados
-Boxplots
+### Boxplots
 para começar as análises, vamos ver os boxplots, o objetivo dos boxplots é nos mostrar a distribuição dos números das variaveis, focando nos quartis dela e mostrando os outliers.
 
 ![newplot (16)](https://github.com/user-attachments/assets/b29341e7-4a4d-4b81-af37-5f5f46d58ec2)
@@ -151,7 +151,7 @@ Observando o boxplot da quantidade de skins, vemos que não temos outliers mas t
 
 
 
-Histogramas
+### Histogramas
 Agora analisando os histogramas, onde nosso objetivo era verificar se a frequência de valores de algumas colunas, apresentavam uma distribuição normal. Começamos analisando a coluna de hp, observa-se que ele apresenta uma distribuição tendendo para a direita, devido a 2 campeões que tem uma vida inicial muito fora do padrão, um tem pouco menos de 420 de vida e o outro tem pouco mais de 500, isso enviesa o histograma para que os dados fiquem mais à direita
 
 ![newplot (2)](https://github.com/user-attachments/assets/aa86d444-db2a-43cc-883e-00cda31d5553)
@@ -177,7 +177,7 @@ por fim temos o histograma sobre dano de ataque, as vezes o dano de ataque indep
 ![newplot (6)](https://github.com/user-attachments/assets/caece7e7-edf0-433b-9212-e399f059d5ed)
 
 
-ScatterPlots
+### ScatterPlots
 Para análise dos scatterplots, começamos a relacionar os atributos dos campeões para gerar os gráficos e as linhas de tendências
 O primeiro scatter é a relação entre entre a vida inicial e o dano de ataque, ela apresentou uma tendência a uma linha de função de primeiro grau, os pontos se concentram mais no canto direito do gráfico, já que a maioria dos campeões tem mais do que 550 de vida inicial
 
@@ -206,7 +206,7 @@ skins são as roupas que você consegue colocar no seu campeão, mantendo os atr
 ![newplot (11)](https://github.com/user-attachments/assets/2f2f9fd6-d6d1-489e-99c2-77b9a810f8c7)
 
 
-Mapa de calor
+### Mapa de calor
 Para o mapa de calor, tentamos estudar as correlações entre as variáveis: hp,mp, skins, movespeed, armor, spellblock, hpregen, attackdamage, winrate, pickrate, banrate, após gerar o gráfico, como as variáveis mais importantes são as 3 de desempenho, vamos avaliar como as outras variáveis se relacionam a elas:
 
 ![newplot (12)](https://github.com/user-attachments/assets/8973d5a7-7160-4c9c-a7cc-be927aeb36a7)
@@ -216,11 +216,11 @@ no banrate temos uma forte correlação entre ele e o pickrate, o que faz sentid
 para o pickrate não temos nenhuma correlação tão forte, a mais forte é a coluna de skins, que como visto no scatterplot campeões mais selecionados tendem a ter mais skins.
 por fim para o winrate temos que nenhuma das colunas realmente se relacionam bem com ela, sendo a mais forte a de movespeed, isso ocorre pois (em minha experiência de jogo) os campeões mais rápidos são os mais fortes
 
-Normalização das colunas
+### Normalização das colunas
 A normalização das colunas se fez necessária devida a escala dos atributos dos campeões serem bem variadas, e ainda temos as métricas de desempenho que também possui escalas bem distintas, para isso se fez necessário a normalização do dataset
 <img width="1278" alt="Captura de Tela 2025-01-22 às 13 33 08" src="https://github.com/user-attachments/assets/bddb8c5f-5d1f-414e-8899-88921f2824a7" />
 
-Distribuição amostral
+### Distribuição amostral
 para a distribuição de amostras e análise das médias amostrais, fiz essas amostras de maneira aleatória sem nenhuma consideração(por tipo de campeão ou etc…) e com reposição, usando a biblioteca random, eu criava uma lista com n valores aleatórios não repetidos, sendo n valores de 10%, 20% e 30% do total da população.
 Para gerar essas médias dos dados de amostra, usei esse código:
 <img width="669" alt="Captura de Tela 2025-01-22 às 13 34 10" src="https://github.com/user-attachments/assets/43e7178a-6651-4c8c-9969-8be3d7fb3c2c" />
@@ -241,30 +241,22 @@ os 9 histogramas apresentam uma tendência a uma curva normal, na amostra de tam
 COLOCAR EQUAÇ˜AO DAS CURVAS
 Intervalos de confiança
 
-DADO
-LEGENDA
-621.80
-média da amostra do hp
-42.34
-desvio padrão da amostra do hp
-613.09 - 630.5
-intervalo de confiança 90%
-611.42 - 632.17
-intervalo de confiança 95%
+| DADO | LEGENDA |
+| ---- | ------- |
+| 621.80 | média da amostra do hp |
+| 42.34| desvio padrão da amostra do hp |
+| 613.09 - 630.5 | intervalo de confiança 90% |
+| 611.42 - 632.17 | intervalo de confiança 95% |
 
+<br />
 
-
-DADO
-LEGENDA
-4.3
-média da amostra da taxa de banimento
-5.87
-desvio padrão da amostra da taxa de banimento
-3.1 - 5.51
-intervalo de confiança 90%
-2.86 - 5.74
-intervalo de confiança 95%
-
+| DADO | LEGENDA |
+| ---- | ------- |
+| 4.3 | média da amostra da taxa de banimento |
+| 5.87 | desvio padrão da amostra da taxa de banimento |
+| 3.1 - 5.51 | intervalo de confiança 90% |
+| 2.86 - 5.74 | intervalo de confiança 95% |
+<br />
 
 Observando os dados sobre a vida inicial percebe-se que grande parte da vida está agrupada entre os 611 e 632, o que indica atualmente que o jogo está começando com muita vida no geral, e o jogo tende a ser mais demorado visto que os campeões demoraram mais para morrer
 Já vendo os dados de banrate, vemos que ele se mantem ali entre os 5.3%, e o intervalo de confiança ali entre 2.84 e 5.74, indica que não há muitos indícios de campeões que estão sendo banidos em vários jogos, os banimentos estão bem distribuídos
